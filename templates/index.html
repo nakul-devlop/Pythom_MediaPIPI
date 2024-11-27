@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Python Script</title>
+    <script>
+        // This function sends the request to the Flask backend to run the script
+        function runScript() {
+            fetch('/run_script')
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);  // Optionally log the server response
+                    alert(data);        // Show the response message to the user
+                    // Start polling the status after the script is started
+                    checkStatus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error running the script.');
+                });
+        }
+
+        // This function checks the status of the running script every 2 seconds
+        function checkStatus() {
+            const statusInterval = setInterval(() => {
+                fetch('/get_status')
+                    .then(response => response.json())
+                    .then(data => {
+                        // If the task has completed, stop polling
+                        if (data.status !== "Not started") {
+                            clearInterval(statusInterval);
+                            alert("Task complete: " + data.status);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching status:', error);
+                        clearInterval(statusInterval);
+                    });
+            }, 2000); // Check status every 2 seconds
+        }
+    </script>
+</head>
+<body>
+    <h1>Run Python Script</h1>
+    <!-- Button to trigger the script -->
+    <button onclick="runScript()">Run Script</button>
+</body>
+</html>
